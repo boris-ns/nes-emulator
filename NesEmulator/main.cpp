@@ -1,10 +1,13 @@
 #include <iostream>
+#include "cpu.h"
 
 using namespace std;
 
 int main()
 {
-	cout << "Hello" << endl;
+	CPU cpu;
+	cpu.LoadROM("../TestROMs/cpu_dummy_reads.nes");
+	cpu.MainLoop();
 
 	return 0;
 }
