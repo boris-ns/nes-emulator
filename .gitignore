@@ -1,3 +1,9 @@
+*.VC.opendb
+*.VC.db
+Debug/
+.vs/
+NesEmulator/Debug/
+
 # Prerequisites
 *.d
 
