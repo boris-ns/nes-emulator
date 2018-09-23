@@ -1,6 +1,7 @@
 #include "cpu.h"
 
 #include <fstream>
+#include <iostream>
 
 CPU::CPU()
 {
@@ -18,6 +19,14 @@ CPU::CPU()
 	X = 0;  
 	Y = 0;  
 	P = 0;
+
+	N = false;
+	V = false;
+	B = false;
+	D = false;
+	I = false;
+	Z = false;
+	C = false;
 
 	memset(memory, 0, MEMORY_SIZE);
 	/*for (int i = 0; i < MEMORY_SIZE; ++i)
@@ -118,7 +127,244 @@ uint8_t CPU::FetchOpcode()
 	return memory[pc];
 }
 
+uint8_t CPU::GetOperand()
+{
+	UpdatePC();
+	return FetchOpcode();
+}
+
+void CPU::SetCarryFlag(uint8_t result)
+{
+	// @TODO: implement this
+}
+
+void CPU::SetZeroFlag(uint8_t result)
+{
+	Z = (result == 0);
+}
+
+void CPU::SetNegativeFlag(uint8_t result)
+{
+	N = (result & 0b10000000);
+}
+
+void CPU::SetOverflowFlag(uint8_t result)
+{
+	// @TODO: implement this
+}
+
+/* ASL  Shift Left One Bit (Memory or Accumulator) */
+void CPU::ASL(uint8_t* operand)
+{
+	C = *operand & 0x80; // set carry flag
+	*operand <<= 1;
+	SetZeroFlag(*operand);
+	SetNegativeFlag(*operand);
+}
+
+/* ROL  Rotate One Bit Left (Memory or Accumulator) */
+void CPU::ROL(uint8_t* operand)
+{
+	uint8_t mask = (*operand & 0x80) >> 7;
+	*operand = (*operand << 1) | mask;
+	C = mask;
+	SetZeroFlag(*operand);
+	SetNegativeFlag(*operand);
+}
+
+/* ROR  Rotate One Bit Right (Memory or Accumulator) */
+void CPU::ROR(uint8_t* operand)
+{
+	uint8_t mask = (*operand & 0x01) << 7;
+	*operand = (*operand >> 1) | mask;
+	C = mask;
+	SetZeroFlag(*operand);
+	SetNegativeFlag(*operand);
+}
+
+/* LSR  Shift One Bit Right (Memory or Accumulator) */
+void CPU::LSR(uint8_t* operand)
+{
+	C = *operand & 0x01;
+	*operand >>= 1;
+	SetZeroFlag(*operand);
+}
+
+/* STA  Store Accumulator in Memory */
+void CPU::STA(uint16_t address)
+{
+	memory[address] = A;
+}
+
+/* STX  Store Index X in Memory */
+void CPU::STX(uint16_t address)
+{
+	memory[address] = X;
+}
+
+/* STY  Store Index Y in Memory */
+void CPU::STY(uint16_t address)
+{
+	memory[address] = Y;
+}
+
+/* LDA  Load Accumulator with Memory */
+void CPU::LDA(uint16_t address)
+{
+	A = memory[address];
+	SetNegativeFlag(A);
+	SetZeroFlag(A);
+}
+
+/* LDX  Load Index X with Memory */
+void CPU::LDX(uint16_t address)
+{
+	X = memory[address];
+	SetNegativeFlag(X);
+	SetZeroFlag(X);
+}
+
+/* LDY  Load Index Y with Memory */
+void CPU::LDY(uint16_t address)
+{
+	Y = memory[address];
+	SetNegativeFlag(X);
+	SetZeroFlag(X);
+}
+
+/* CMP  Compare Memory with Accumulator */
+void CPU::CMP(uint8_t operand)
+{
+	uint8_t result = A - operand;
+	SetNegativeFlag(result);
+	SetZeroFlag(result);
+	SetCarryFlag(result);
+}
+
+/* CPX  Compare Memory and Index X */
+void CPU::CPX(uint8_t operand)
+{
+	uint8_t result = X - operand;
+	SetNegativeFlag(result);
+	SetZeroFlag(result);
+	SetCarryFlag(result);
+}
+
+/* CPY  Compare Memory and Index Y */
+void CPU::CPY(uint8_t operand)
+{
+	uint8_t result = Y - operand;
+	SetNegativeFlag(result);
+	SetZeroFlag(result);
+	SetCarryFlag(result);
+}
+
+/* ORA  OR Memory with Accumulator */
+void CPU::ORA(uint8_t operand)
+{
+	A |= operand;
+	SetNegativeFlag(A);
+	SetZeroFlag(A);
+}
+
+/* AND  AND Memory with Accumulator */
+void CPU::AND(uint8_t operand)
+{
+	A &= operand;
+	SetNegativeFlag(A);
+	SetZeroFlag(A);
+}
+
+/* EOR  Exclusive-OR Memory with Accumulator */
+void CPU::EOR(uint8_t operand)
+{
+	A ^= operand;
+	SetNegativeFlag(A);
+	SetZeroFlag(A);
+}
+
+/* ADC  Add Memory to Accumulator with Carry */
+// @TODO: check if correct ?
+void CPU::ADC(uint8_t operand)
+{
+	A += operand + C;
+	SetNegativeFlag(A);
+	SetZeroFlag(A);
+	SetCarryFlag(A);
+	SetOverflowFlag(A);
+}
+
+/* SBC  Subtract Memory from Accumulator with Borrow */
+void CPU::SBC(uint8_t operand)
+{
+	A -= operand - C;
+	SetNegativeFlag(A);
+	SetZeroFlag(A);
+	SetCarryFlag(A);
+	SetOverflowFlag(A);
+}
+
+/* BIT  Test Bits in Memory with Accumulator */
+void CPU::BIT(uint8_t operand)
+{
+	uint8_t result = A & operand;
+	N = operand & 0b10000000;
+	V = operand & 0b01000000;
+	SetZeroFlag(result);
+}
+
+/* DEC  Decrement Memory by One */
+void CPU::DEC(uint16_t address)
+{
+	memory[address] -= 1;
+	SetNegativeFlag(memory[address]);
+	SetZeroFlag(memory[address]);
+}
+
+/* INC  Increment Memory by One */
+void CPU::INC(uint16_t address)
+{
+	memory[address] += 1;
+	SetNegativeFlag(memory[address]);
+	SetZeroFlag(memory[address]);
+}
+
 void CPU::DecodeExecuteOpcode()
 {
+	switch (currentOpcode)
+	{
+	/* Accumulator addressing mode */
+	case 0x0A:  ASL(&A);  break;
+	case 0x2A:  ROL(&A);  break;
+	case 0x4A:  LSR(&A);  break;
+	case 0x6A:  ROR(&A);  break;
 
+	/* Zero page addressing mode */
+	case 0x05:  ORA(memory[GetOperand()]);   break;
+	case 0x06:  ASL(&memory[GetOperand()]);  break;
+	case 0x24:  BIT(memory[GetOperand()]);   break;
+	case 0x25:  AND(memory[GetOperand()]);   break;
+	case 0x26:  ROL(&memory[GetOperand()]);  break;
+	case 0x45:  EOR(memory[GetOperand()]);   break;
+	case 0x46:  LSR(&memory[GetOperand()]);  break;
+	case 0x65:  ADC(memory[GetOperand()]);   break;
+	case 0x66:  ROR(&memory[GetOperand()]);  break;
+	case 0x84:  STY(GetOperand());           break;
+	case 0x85:  STA(GetOperand());           break;
+	case 0x86:  STX(GetOperand());           break;
+	case 0xA4:  LDY(GetOperand());           break;
+	case 0xA5:  LDA(GetOperand());           break;
+	case 0xA6:  LDX(GetOperand());           break;
+	case 0xC4:  CPY(memory[GetOperand()]);   break;
+	case 0xC5:  CMP(memory[GetOperand()]);   break;
+	case 0xC6:  DEC(GetOperand());           break;
+	case 0xE4:  CPX(memory[GetOperand()]);   break;
+	case 0xE5:  SBC(memory[GetOperand()]);   break;
+	case 0xE6:  INC(GetOperand());           break;
+
+	default:
+		std::cout << "Invalid opcode " << std::hex << currentOpcode << ".";
+	}
+
+	UpdatePC();
 }
