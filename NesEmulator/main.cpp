@@ -6,7 +6,7 @@ using namespace std;
 int main()
 {
 	CPU cpu;
-	cpu.LoadROM("../TestROMs/cpu_dummy_reads.nes");
+	bool ret = cpu.LoadROM("../TestROMs/super_mario_brothers.nes");
 	cpu.MainLoop();
 
 	return 0;
