@@ -14,7 +14,7 @@ CPU::CPU()
 	prg_ram_size = 1;
 	chr_size = 1;
 
-	sp = 0x01FF; // actually 0x01FF 
+	sp = 0x01FF;
 	A = 0;  
 	X = 0;  
 	Y = 0;  
@@ -131,6 +131,27 @@ uint8_t CPU::GetOperand()
 {
 	UpdatePC();
 	return FetchOpcode();
+}
+
+uint16_t CPU::GetAbsOperand()
+{
+	uint8_t lowByte  = GetOperand();
+	uint8_t highByte = GetOperand();
+
+	uint16_t result = highByte;
+	result <<= 8;
+	result |= lowByte;
+
+	return result;
+}
+
+void CPU::PushToStack(uint8_t value)
+{
+	memory[sp] = value;
+	--sp;
+
+	if (sp < 0x0100) // wrap around when there is overflow
+		sp = 0x01FF;
 }
 
 void CPU::SetCarryFlag(uint8_t result)
@@ -329,6 +350,19 @@ void CPU::INC(uint16_t address)
 	SetZeroFlag(memory[address]);
 }
 
+/* JMP  Jump to New Location */
+void CPU::JMP(uint16_t address)
+{
+	pc = address;
+}
+
+/* JSR  Jump to New Location Saving Return Address */
+void CPU::JSR(uint16_t address)
+{
+	PushToStack(pc);
+	pc = address;
+}
+
 void CPU::DecodeExecuteOpcode()
 {
 	switch (currentOpcode)
@@ -362,8 +396,33 @@ void CPU::DecodeExecuteOpcode()
 	case 0xE5:  SBC(memory[GetOperand()]);   break;
 	case 0xE6:  INC(GetOperand());           break;
 
+	/* Absolute addressing mode */
+	case 0x2C:  BIT(memory[GetAbsOperand()]);   break;
+	case 0x8C:  STY(GetAbsOperand());           break;
+	case 0xAC:  LDY(GetAbsOperand());           break;
+	case 0xCC:  CPY(memory[GetAbsOperand()]);   break;
+	case 0xEC:  CPX(memory[GetAbsOperand()]);   break;
+	case 0x0D:  ORA(memory[GetAbsOperand()]);   break;
+	case 0x2D:  AND(memory[GetAbsOperand()]);   break;
+	case 0x4D:  EOR(memory[GetAbsOperand()]);   break;
+	case 0x6D:  ADC(memory[GetAbsOperand()]);   break;
+	case 0x8D:  STA(GetAbsOperand());           break;
+	case 0xAD:  LDA(GetAbsOperand());           break;
+	case 0xCD:  CMP(memory[GetAbsOperand()]);   break;
+	case 0xED:  SBC(memory[GetAbsOperand()]);   break;
+	case 0x0E:  ASL(&memory[GetAbsOperand()]);  break;
+	case 0x2E:  ROL(&memory[GetAbsOperand()]);  break;
+	case 0x4E:  LSR(&memory[GetAbsOperand()]);  break;
+	case 0x6E:  ROR(&memory[GetAbsOperand()]);  break;
+	case 0x8E:  STX(GetAbsOperand());           break;
+	case 0xAE:  LDX(GetAbsOperand());           break;
+	case 0xCE:  DEC(GetAbsOperand());           break;
+	case 0xEE:  INC(GetAbsOperand());           break;
+	case 0x4C:  JMP(GetAbsOperand());           break;
+	case 0x20:  JSR(GetAbsOperand());           break;
+
 	default:
-		std::cout << "Invalid opcode " << std::hex << currentOpcode << ".";
+		std::cout << "Invalid opcode " << std::hex << currentOpcode << std::endl;
 	}
 
 	UpdatePC();

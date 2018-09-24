@@ -28,6 +28,13 @@ public:
 	/* Updates PC and gets next operand */
 	uint8_t GetOperand();
 
+	/* Fetches 2 next operands from memory and creates 16bit address
+	   It is used for absolute addressing mode. */
+	uint16_t GetAbsOperand();
+
+	/* Push value to the stack */
+	void PushToStack(uint8_t value);
+
 	/* Decodes opcode and executes it */
 	void DecodeExecuteOpcode();
 
@@ -88,4 +95,6 @@ private:
 	void BIT(uint8_t operand);
 	void DEC(uint16_t address);
 	void INC(uint16_t address);
+	void JMP(uint16_t address);
+	void JSR(uint16_t address);
 };
