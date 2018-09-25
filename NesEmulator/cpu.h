@@ -50,6 +50,14 @@ public:
 	Wraparound included*/
 	uint16_t GetYIndexedZeroPageOperand();
 
+	/* Fetches the indirect address and sets PC to that value. */
+	uint16_t GetIndirectAddress();
+
+	uint8_t GetImmidiateOperand();
+
+	/* 16 bit version. Address in little-endian byte order*/
+	uint16_t GetImmidiateOperand16();
+
 	/* Push value to the stack */
 	void PushToStack(uint8_t value);
 

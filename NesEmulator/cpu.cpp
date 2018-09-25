@@ -145,6 +145,27 @@ uint16_t CPU::GetAbsOperand()
 	return result;
 }
 
+uint16_t CPU::GetIndirectAddress()
+{
+	uint8_t lowByte = GetOperand();
+	uint8_t highByte = GetOperand();
+
+	uint16_t tempAddress = highByte;
+	tempAddress <<= 8;
+	tempAddress |= lowByte;
+
+	uint8_t lowByteIndirect = memory[tempAddress];
+	uint8_t highByteIndirect = memory[tempAddress + 1];
+
+	uint16_t finalAddress = highByteIndirect;
+	finalAddress <<= 8;
+	finalAddress |= lowByteIndirect;
+
+	pc = finalAddress;
+
+	return finalAddress;
+}
+
 uint16_t CPU::GetXIndexedAbsoluteOperand()
 {
 	uint16_t absoluteAddress = GetAbsOperand();
@@ -185,6 +206,23 @@ uint16_t CPU::GetYIndexedZeroPageOperand()
 	completeAddress &= 0x00FF;
 
 	return completeAddress;
+}
+
+uint8_t CPU::GetImmidiateOperand()
+{
+	return GetOperand();
+}
+
+uint16_t CPU::GetImmidiateOperand16()
+{
+	uint8_t lowByte = GetOperand();
+	uint8_t highByte = GetOperand();
+
+	uint16_t result = highByte;
+	result <<= 8;
+	result |= lowByte;
+
+	return result;
 }
 
 void CPU::PushToStack(uint8_t value)
@@ -516,6 +554,24 @@ void CPU::DecodeExecuteOpcode()
 	case 0x19: ORA(memory[GetYIndexedAbsoluteOperand()]);	break;
 	case 0xF9: SBC(memory[GetYIndexedAbsoluteOperand()]);	break;
 	case 0x99: STA(GetYIndexedAbsoluteOperand());			break;
+
+	/* Indirect addressing mode */
+
+	case 0x6C: JMP(GetIndirectAddress());	break;
+
+	/* Immidiate addressing mode */
+
+	case 0x69: ADC(GetImmidiateOperand());	break;
+	case 0x29: AND(GetImmidiateOperand());	break;
+	case 0xC9: CMP(GetImmidiateOperand());	break;
+	case 0xE0: CPX(GetImmidiateOperand());	break;
+	case 0xC0: CPY(GetImmidiateOperand());	break;
+	case 0x49: EOR(GetImmidiateOperand());	break;
+	case 0xA9: LDA(GetImmidiateOperand16());	break;
+	case 0xA2: LDX(GetImmidiateOperand16());	break;
+	case 0xA0: LDY(GetImmidiateOperand16());	break;
+	case 0x09: ORA(GetImmidiateOperand());	break;
+	case 0xE9: SBC(GetImmidiateOperand());	break;
 
 	default:
 		std::cout << "Invalid opcode " << std::hex << currentOpcode << std::endl;
