@@ -145,6 +145,32 @@ uint16_t CPU::GetAbsOperand()
 	return result;
 }
 
+uint16_t CPU::GetXIndexedZeroPageOperand()
+{
+	uint8_t lowByte = GetOperand();
+	uint16_t completeAddress = 0x0000 | lowByte;
+
+	completeAddress += X;
+
+	/*Wraparound*/
+	completeAddress &= 0x00FF;
+
+	return completeAddress;
+}
+
+uint16_t CPU::GetYIndexedZeroPageOperand()
+{
+	uint8_t lowByte = GetOperand();
+	uint16_t completeAddress = 0x0000 | lowByte;
+
+	completeAddress += Y;
+
+	/*Wraparound*/
+	completeAddress &= 0x00FF;
+
+	return completeAddress;
+}
+
 void CPU::PushToStack(uint8_t value)
 {
 	memory[sp] = value;
@@ -395,6 +421,30 @@ void CPU::DecodeExecuteOpcode()
 	case 0xE4:  CPX(memory[GetOperand()]);   break;
 	case 0xE5:  SBC(memory[GetOperand()]);   break;
 	case 0xE6:  INC(GetOperand());           break;
+
+	/* X-indexed zero page addressing mode */
+
+	case 0x75: ADC(memory[GetXIndexedZeroPageOperand()]);	break;
+	case 0x35: AND(memory[GetXIndexedZeroPageOperand()]);	break;
+	case 0x16: ASL(&memory[GetXIndexedZeroPageOperand()]);	break;
+	case 0xD5: CMP(memory[GetXIndexedZeroPageOperand()]);	break;
+	case 0xD6: DEC(GetXIndexedZeroPageOperand());			break;
+	case 0x55: EOR(memory[GetXIndexedZeroPageOperand()]);	break;
+	case 0xF6: INC(GetXIndexedZeroPageOperand());			break;
+	case 0xB5: LDA(GetXIndexedZeroPageOperand());			break;
+	case 0xB4: LDY(GetXIndexedZeroPageOperand());			break;
+	case 0x56: LSR(&memory[GetXIndexedZeroPageOperand()]);	break;
+	case 0x15: ORA(memory[GetXIndexedZeroPageOperand()]);	break;
+	case 0x36: ROL(&memory[GetXIndexedZeroPageOperand()]);	break;
+	case 0x76: ROR(&memory[GetXIndexedZeroPageOperand()]);	break;
+	case 0xF5: SBC(memory[GetXIndexedZeroPageOperand()]);	break;
+	case 0x95: STA(GetXIndexedZeroPageOperand());			break;
+	case 0x94: STY(GetXIndexedZeroPageOperand());			break;
+
+	/* Y-indexed zero page addressing mode */
+
+	case 0xB6: LDX(GetYIndexedZeroPageOperand());	break;
+	case 0x96: STX(GetYIndexedZeroPageOperand());	break;
 
 	/* Absolute addressing mode */
 	case 0x2C:  BIT(memory[GetAbsOperand()]);   break;

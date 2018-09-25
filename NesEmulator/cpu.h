@@ -32,6 +32,16 @@ public:
 	   It is used for absolute addressing mode. */
 	uint16_t GetAbsOperand();
 
+	/* Fetches next operand(16-bit address) of an instruction which is in X-Indexed Zero Page mode
+	and adds content of register X to it in order to get new address which is in range ($0000-$00FF).
+	Wraparound included*/
+	uint16_t GetXIndexedZeroPageOperand();
+
+	/* Fetches next operand(16-bit address) of an instruction which is in Y-Indexed Zero Page mode
+	and adds content of register Y to it in order to get new address which is in range ($0000-$00FF).
+	Wraparound included*/
+	uint16_t GetYIndexedZeroPageOperand();
+
 	/* Push value to the stack */
 	void PushToStack(uint8_t value);
 
