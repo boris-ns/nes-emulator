@@ -234,6 +234,11 @@ void CPU::PushToStack(uint8_t value)
 		sp = 0x01FF;
 }
 
+uint8_t CPU::PopFromStack()
+{
+	return memory[sp++];
+}
+
 void CPU::SetCarryFlag(uint8_t result)
 {
 	// @TODO: implement this
@@ -507,6 +512,180 @@ void CPU::BVS(uint8_t operand)
 		pc += operand;
 }
 
+/* BRK  Force Break */
+void CPU::BRK()
+{
+	I = true;
+	pc += 2;
+	PushToStack(pc);
+	PushToStack(CreateStatusRegister());
+}
+
+/* RTI  Return from Interrupt */
+void CPU::RTI()
+{
+	// @TODO: FINISH THIS
+	uint8_t statusReg = PopFromStack();
+	pc = PopFromStack();
+}
+
+/* RTS  Return from Subroutine */
+void CPU::RTS()
+{
+	pc = PopFromStack() + 1;
+}
+
+/* PHP  Push Processor Status on Stack */
+void CPU::PHP()
+{
+	PushToStack(P);
+}
+
+/* CLC  Clear Carry Flag */
+void CPU::CLC()
+{
+	C = false;
+}
+
+/* PLP  Pull Processor Status from Stack */
+void CPU::PLP() 
+{ 
+	sp = PopFromStack(); 
+}
+
+/* SEC  Set Carry Flag */
+void CPU::SEC() 
+{ 
+	C = true; 
+}
+
+/* PHA  Push Accumulator on Stack */
+void CPU::PHA() 
+{ 
+	PushToStack(A); 
+}
+
+/* CLI  Clear Interrupt Disable Bit */
+void CPU::CLI() 
+{ 
+	I = false; 
+}
+
+/* PLA  Pull Accumulator from Stack */
+void CPU::PLA()
+{
+	A = PopFromStack();
+	SetNegativeFlag(A);
+	SetZeroFlag(A);
+}
+
+/* SEI  Set Interrupt Disable Status */
+void CPU::SEI() 
+{ 
+	I = true; 
+}
+
+/* DEY  Decrement Index Y by One */
+void CPU::DEY()
+{
+	--Y;
+	SetNegativeFlag(Y);
+	SetZeroFlag(Y);
+}
+
+/* TYA  Transfer Index Y to Accumulator */
+void CPU::TYA()
+{
+	A = Y;
+	SetNegativeFlag(A);
+	SetZeroFlag(A);
+}
+
+/* TAY  Transfer Accumulator to Index Y */
+void CPU::TAY()
+{
+	Y = A;
+	SetNegativeFlag(Y);
+	SetZeroFlag(Y);
+}
+
+/* CLV  Clear Overflow Flag */
+void CPU::CLV()
+{
+	V = false;
+}
+
+/* INY  Increment Index Y by One */
+void CPU::INY()
+{
+	++Y;
+	SetNegativeFlag(Y);
+	SetZeroFlag(Y);
+}
+
+/* CLD  Clear Decimal Mode */
+void CPU::CLD()
+{
+	D = false;
+}
+
+/* INX  Increment Index X by One */
+void CPU::INX()
+{
+	++X;
+	SetNegativeFlag(X);
+	SetZeroFlag(X);
+}
+
+/* SED  Set Decimal Flag */
+void CPU::SED()
+{
+	D = true;
+}
+
+/* TXA  Transfer Index X to Accumulator */
+void CPU::TXA()
+{
+	A = X;
+	SetNegativeFlag(A);
+	SetZeroFlag(A);
+}
+
+/* TXS  Transfer Index X to Stack Register */
+void CPU::TXS()
+{
+	sp = X;
+}
+
+/* TAX  Transfer Accumulator to Index X */
+void CPU::TAX()
+{
+	X = A;
+	SetNegativeFlag(X);
+	SetZeroFlag(X);
+}
+
+/* TSX  Transfer Stack Pointer to Index X */
+void CPU::TSX()
+{
+	X = sp;
+	SetNegativeFlag(X);
+	SetZeroFlag(X);
+}
+
+/* DEX  Decrement Index X by One */
+void CPU::DEX()
+{
+	--X;
+	SetNegativeFlag(X);
+	SetZeroFlag(X);
+}
+
+/* NOP  No Operation */
+void CPU::NOP()
+{
+}
+
 void CPU::DecodeExecuteOpcode()
 {
 	switch (currentOpcode)
@@ -648,7 +827,32 @@ void CPU::DecodeExecuteOpcode()
 	case 0x50: BVC(GetOperand());	break;
 	case 0x70: BVS(GetOperand());	break;
 
-
+	/* Implied addressing mode */
+	case 0x00:  BRK();  break;
+	case 0x40:  RTI();  break;
+	case 0x60:  RTS();  break;
+	case 0x08:  PHP();  break;
+	case 0x18:  CLC();  break;
+	case 0x28:  PLP();  break;
+	case 0x38:  SEC();  break;
+	case 0x48:  PHA();  break;
+	case 0x58:  CLI();  break;
+	case 0x68:  PLA();  break;
+	case 0x78:  SEI();  break;
+	case 0x88:  DEY();  break;
+	case 0x98:  TYA();  break;
+	case 0xA8:  TAY();  break;
+	case 0xB8:  CLV();  break;
+	case 0xC8:  INY();  break;
+	case 0xD8:  CLD();  break;
+	case 0xE8:  INX();  break;
+	case 0xF8:  SED();  break;
+	case 0x8A:  TXA();  break;
+	case 0x9A:  TXS();  break;
+	case 0xAA:  TAX();  break;
+	case 0xBA:  TSX();  break;
+	case 0xCA:  DEX();  break;
+	case 0xEA:  NOP();  break;
 
 	default:
 		std::cout << "Invalid opcode " << std::hex << currentOpcode << std::endl;

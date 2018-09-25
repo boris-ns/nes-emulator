@@ -61,6 +61,9 @@ public:
 	/* Push value to the stack */
 	void PushToStack(uint8_t value);
 
+	/* Pop value from stack */
+	uint8_t PopFromStack();
+
 	/* Decodes opcode and executes it */
 	void DecodeExecuteOpcode();
 
@@ -98,6 +101,7 @@ private:
 	void SetZeroFlag(uint8_t result);
 	void SetNegativeFlag(uint8_t result);
 	void SetOverflowFlag(uint8_t result);
+	uint8_t CreateStatusRegister();
 
 	/* CPU instructions */
 	void ASL(uint8_t* operand);
@@ -132,4 +136,30 @@ private:
 	void BPL(uint8_t operand);
 	void BVC(uint8_t operand);
 	void BVS(uint8_t operand);
+
+	void BRK();
+	void RTI();
+	void RTS();
+	void PHP();
+	void CLC();
+	void PLP();
+	void SEC();
+	void PHA();
+	void CLI();
+	void PLA();
+	void SEI();
+	void DEY();
+	void TYA();
+	void TAY();
+	void CLV();
+	void INY();
+	void CLD();
+	void INX();
+	void SED();
+	void TXA();
+	void TXS();
+	void TAX();
+	void TSX();
+	void DEX();
+	void NOP();
 };
