@@ -145,6 +145,22 @@ uint16_t CPU::GetAbsOperand()
 	return result;
 }
 
+uint16_t CPU::GetXIndexedAbsoluteOperand()
+{
+	uint16_t absoluteAddress = GetAbsOperand();
+	absoluteAddress += X;
+
+	return absoluteAddress;
+}
+
+uint16_t CPU::GetYIndexedAbsoluteOperand()
+{
+	uint16_t absoluteAddress = GetAbsOperand();
+	absoluteAddress += Y;
+
+	return absoluteAddress;
+}
+
 uint16_t CPU::GetXIndexedZeroPageOperand()
 {
 	uint8_t lowByte = GetOperand();
@@ -470,6 +486,36 @@ void CPU::DecodeExecuteOpcode()
 	case 0xEE:  INC(GetAbsOperand());           break;
 	case 0x4C:  JMP(GetAbsOperand());           break;
 	case 0x20:  JSR(GetAbsOperand());           break;
+
+	/* X-indexed absolute addressing mode */
+
+	case 0x7D: ADC(memory[GetXIndexedAbsoluteOperand()]);	break;
+	case 0x3D: AND(memory[GetXIndexedAbsoluteOperand()]);	break;
+	case 0x1E: ASL(&memory[GetXIndexedAbsoluteOperand()]);	break;
+	case 0xDD: CMP(memory[GetXIndexedAbsoluteOperand()]);	break;
+	case 0xDE: DEC(GetXIndexedAbsoluteOperand());			break;
+	case 0x5D: EOR(memory[GetXIndexedAbsoluteOperand()]);	break;
+	case 0xFE: INC(GetXIndexedAbsoluteOperand());			break;
+	case 0xBD: LDA(GetXIndexedAbsoluteOperand());			break;
+	case 0xBC: LDY(GetXIndexedAbsoluteOperand());			break;
+	case 0x5E: LSR(&memory[GetXIndexedAbsoluteOperand()]);	break;
+	case 0x1D: ORA(memory[GetXIndexedAbsoluteOperand()]);	break;
+	case 0x3E: ROL(&memory[GetXIndexedAbsoluteOperand()]);	break;
+	case 0x7E: ROR(&memory[GetXIndexedAbsoluteOperand()]);	break;
+	case 0xFD: SBC(memory[GetXIndexedAbsoluteOperand()]);	break;
+	case 0x9D: STA(GetXIndexedAbsoluteOperand());			break;
+
+	/* Y-indexed absolute addressing mode */
+
+	case 0x79: ADC(memory[GetYIndexedAbsoluteOperand()]);	break;
+	case 0x39: AND(memory[GetYIndexedAbsoluteOperand()]);	break;
+	case 0xD9: CMP(memory[GetYIndexedAbsoluteOperand()]);	break;
+	case 0x59: EOR(memory[GetYIndexedAbsoluteOperand()]);	break;
+	case 0xB9: LDA(GetYIndexedAbsoluteOperand());			break;
+	case 0xBE: LDX(GetYIndexedAbsoluteOperand());			break;
+	case 0x19: ORA(memory[GetYIndexedAbsoluteOperand()]);	break;
+	case 0xF9: SBC(memory[GetYIndexedAbsoluteOperand()]);	break;
+	case 0x99: STA(GetYIndexedAbsoluteOperand());			break;
 
 	default:
 		std::cout << "Invalid opcode " << std::hex << currentOpcode << std::endl;

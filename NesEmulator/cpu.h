@@ -32,6 +32,14 @@ public:
 	   It is used for absolute addressing mode. */
 	uint16_t GetAbsOperand();
 
+	/* Fetches 2 next operands from memory and creates 16bit address,
+	then it adds content of register X to it */
+	uint16_t GetXIndexedAbsoluteOperand();
+
+	/* Fetches 2 next operands from memory and creates 16bit address,
+	then it adds content of register Y to it */
+	uint16_t GetYIndexedAbsoluteOperand();
+
 	/* Fetches next operand(16-bit address) of an instruction which is in X-Indexed Zero Page mode
 	and adds content of register X to it in order to get new address which is in range ($0000-$00FF).
 	Wraparound included*/
