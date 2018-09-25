@@ -123,4 +123,13 @@ private:
 	void INC(uint16_t address);
 	void JMP(uint16_t address);
 	void JSR(uint16_t address);
+
+	void BCC(uint8_t operand);
+	void BCS(uint8_t operand);
+	void BEQ(uint8_t operand);
+	void BMI(uint8_t operand);
+	void BNE(uint8_t operand);
+	void BPL(uint8_t operand);
+	void BVC(uint8_t operand);
+	void BVS(uint8_t operand);
 };

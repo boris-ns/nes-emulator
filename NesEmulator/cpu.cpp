@@ -443,6 +443,70 @@ void CPU::JSR(uint16_t address)
 	pc = address;
 }
 
+/* BCC  Branch on carry bit clear */
+void CPU::BCC(uint8_t operand)
+{
+	++pc;
+	if (C == 0)
+		pc += operand;
+}
+
+/* BCS  Branch on carry bit set */
+void CPU::BCS(uint8_t operand)
+{
+	++pc;
+	if (C == 1)
+		pc += operand;
+}
+
+/* BEQ  Branch on result zero */
+void CPU::BEQ(uint8_t operand)
+{
+	++pc;
+	if (Z == 1)
+		pc += operand;
+}
+
+/* BMI  Branch on result minus */
+void CPU::BMI(uint8_t operand)
+{
+	++pc;
+	if (N == 1)
+		pc += operand;
+}
+
+/* BNE  Branch on result not zero */
+void CPU::BNE(uint8_t operand)
+{
+	++pc;
+	if (Z == 0)
+		pc += operand;
+}
+
+/* BPL  Branch on rezult plus */
+void CPU::BPL(uint8_t operand)
+{
+	++pc;
+	if (N == 0)
+		pc += operand;
+}
+
+/* BVC  Branch on overflow bit clear */
+void CPU::BVC(uint8_t operand)
+{
+	++pc;
+	if (V == 0)
+		pc += operand;
+}
+
+/* BVS  Branch on overflow bit set */
+void CPU::BVS(uint8_t operand)
+{
+	++pc;
+	if (V == 1)
+		pc += operand;
+}
+
 void CPU::DecodeExecuteOpcode()
 {
 	switch (currentOpcode)
@@ -572,6 +636,19 @@ void CPU::DecodeExecuteOpcode()
 	case 0xA0: LDY(GetImmidiateOperand16());	break;
 	case 0x09: ORA(GetImmidiateOperand());	break;
 	case 0xE9: SBC(GetImmidiateOperand());	break;
+
+	/* Relative addressing mode */
+
+	case 0x90: BCC(GetOperand());	break;
+	case 0xB0: BCS(GetOperand());	break;
+	case 0xF0: BEQ(GetOperand());	break;
+	case 0x30: BMI(GetOperand());	break;
+	case 0xD0: BNE(GetOperand());	break;
+	case 0x10: BPL(GetOperand());	break;
+	case 0x50: BVC(GetOperand());	break;
+	case 0x70: BVS(GetOperand());	break;
+
+
 
 	default:
 		std::cout << "Invalid opcode " << std::hex << currentOpcode << std::endl;
